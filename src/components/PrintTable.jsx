@@ -1,62 +1,49 @@
-const ReportTable = ({ data }) => {
-    console.log(data);
-    const { id, area, name, subject, description, technician, createdAt } =
-        data;
+import { formatted } from "../utilities/formatDate";
 
-    const handleErrorsData = (field) => {
-        return field === undefined
-            ? "Sin datos"
-            : field === ""
-            ? "Sin asignar"
-            : field;
-    };
+const displayValue = (value, placeholder = "Sin asignar") =>
+    value || placeholder;
+
+const PrintTable = ({ ticket }) => {
+    const ticketData = [
+        { label: "No. Ticket", value: ticket._id.slice(-6).toUpperCase() },
+        { label: "Área Solicitante", value: displayValue(ticket.department) },
+        { label: "Nombre", value: displayValue(ticket.createdBy?.name, "N/A") },
+        { label: "Asunto", value: displayValue(ticket.subject) },
+        { label: "Descripción", value: displayValue(ticket.description) },
+        {
+            label: "Técnico Asignado",
+            value: displayValue(ticket.assignedTo?.name),
+        },
+        { label: "Fecha", value: formatted(ticket.createdAt) },
+    ];
 
     return (
-        <div className="ticket-table-block">
+        <div className="ticket-table-block" id="printable-area">
+            <h2 className="ticket-table-block__title">Reporte de Servicio</h2>
             <table className="ticket-table-block__table">
-                <thead className="ticket-table-block__header">
+                <thead>
                     <tr className="ticket-table-block__row ticket-table-block__row--header">
-                        <th className="ticket-table-block__head-cell">
-                            No. Ticket
-                        </th>
-                        <th className="ticket-table-block__head-cell">
-                            Área Solicitante
-                        </th>
-                        <th className="ticket-table-block__head-cell">
-                            Nombre
-                        </th>
-                        <th className="ticket-table-block__head-cell">
-                            Asunto
-                        </th>
-                        <th className="ticket-table-block__head-cell">
-                            Descripción
-                        </th>
-                        <th className="ticket-table-block__head-cell">
-                            Técnico asignado
-                        </th>
+                        {ticketData.map((item) => (
+                            <th
+                                key={item.label}
+                                className="ticket-table-block__head-cell"
+                            >
+                                {item.label}
+                            </th>
+                        ))}
                         <th className="ticket-table-block__head-cell">Firma</th>
                     </tr>
                 </thead>
-                <tbody className="ticket-table-block__body">
-                    <tr>
-                        <td className="ticket-table-block__cell">
-                            {handleErrorsData(id)}
-                        </td>
-                        <td className="ticket-table-block__cell">
-                            {handleErrorsData(area)}
-                        </td>
-                        <td className="ticket-table-block__cell">
-                            {handleErrorsData(name)}
-                        </td>
-                        <td className="ticket-table-block__cell">
-                            {handleErrorsData(subject)}
-                        </td>
-                        <td className="ticket-table-block__cell">
-                            {handleErrorsData(description)}
-                        </td>
-                        <td className="ticket-table-block__cell">
-                            {handleErrorsData(technician)}
-                        </td>
+                <tbody>
+                    <tr className="ticket-table-block__row">
+                        {ticketData.map((item) => (
+                            <td
+                                key={item.label}
+                                className="ticket-table-block__cell"
+                            >
+                                {item.value}
+                            </td>
+                        ))}
                         <td className="ticket-table-block__cell"></td>
                     </tr>
                 </tbody>
@@ -65,4 +52,4 @@ const ReportTable = ({ data }) => {
     );
 };
 
-export default ReportTable;
+export default PrintTable;

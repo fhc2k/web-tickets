@@ -12,7 +12,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import GenerateTicket from "./pages/GenerateTicket";
 import Dashboard from "./pages/Dashboard";
-import Report from "./pages/Report";
+import Print from "./pages/Print";
 import { Grid } from "ldrs/react";
 import "ldrs/react/Grid.css";
 
@@ -20,7 +20,7 @@ import Layout from "./components/Layout";
 
 const RequireAuth = ({ children }) => {
     const { isAuthenticated } = useAuth();
-    return isAuthenticated ? children : <Navigate replace to="/login" />;
+    return isAuthenticated ? children : <Navigate replace to="/home" />;
 };
 
 const RedirectAuth = ({ children }) => {
@@ -38,7 +38,7 @@ function App() {
                     <div className="content-area">
                         <div className="content-area__body">
                             <Grid size="60" speed="1.5" color="#007bff" />
-                            <p>Obteniendo datos de sesion...</p>
+                            <p>Comprobando datos de sesion...</p>
                         </div>
                     </div>
                 </main>
@@ -81,7 +81,7 @@ function App() {
                     path: "/dashboard",
                     element: (
                         <RequireAuth>
-                            {<Dashboard />}
+                            <Dashboard />
                         </RequireAuth>
                     ),
                 },
@@ -94,7 +94,7 @@ function App() {
                         </RequireAuth>
                     ),
                 },
-                { path: "/print", element: <Report /> },
+                { path: "/print", element: <Print /> },
 
                 { path: "*", element: <Navigate to="/home" replace /> },
             ],

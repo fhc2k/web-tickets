@@ -1,35 +1,29 @@
-import { yupResolver } from "@hookform/resolvers/yup";
+// src/components/LoginForm.jsx
+
 import { useForm } from "react-hook-form";
-import { loginSchema } from "../utilities/validationSchemas";
-import { useAuth } from "../context/AuthContext";
-import InputPassword from "./InputPassword";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { Link } from "react-router-dom";
 import { Ring2 } from "ldrs/react";
 import "ldrs/react/Ring2.css";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+
+import { loginSchema } from "../utilities/validationSchemas";
+import { useAuth } from "../context/AuthContext";
+import FormInput from "./FormInput";
+import PasswordInput from "./PasswordInput";
 
 const LoginForm = () => {
-    const [loading, setLoading] = useState(false);
     const { login } = useAuth();
 
     const {
         register,
         handleSubmit,
-        formState: { errors },
+        formState: { errors, isSubmitting },
     } = useForm({
         resolver: yupResolver(loginSchema),
     });
-    
 
-    const onSubmit = async ({ email, password }) => {
-        setLoading(true);
-
-        await login({
-            email,
-            password,
-        });
-
-        setLoading(false);
+    const onSubmit = async (data) => {
+        await login(data);
     };
 
     return (
@@ -37,58 +31,37 @@ const LoginForm = () => {
             <div className="form-block__header">
                 <h1 className="form-block__title">Bienvenido de nuevo</h1>
                 <p className="form-block__subtitle">
-                    No tienes un usuario?{" "}
-                    <Link to={"/register"} className="link">Registrate aqui</Link>
+                    ¿No tienes un usuario?{" "}
+                    <Link to="/register" className="link">
+                        Regístrate aquí
+                    </Link>
                 </p>
             </div>
-            <div className="form-block__container">
-                <div
-                    className={`form-block__group ${
-                        errors.email && "form-block__group--error"
-                    }`}
-                >
-                    <label className="form-block__label" htmlFor="">
-                        Correo electronico
-                    </label>
-                    <div className="form-block__field">
-                        <input
-                            {...register("email")}
-                            className="form-block__input"
-                            type="text"
-                            disabled={loading}
-                        />
-                    </div>
-                    {errors.email ? (
-                        <p className="form-block__error-message">
-                            {errors.email.message}
-                        </p>
-                    ) : (
-                        ""
-                    )}
-                </div>
 
-                <InputPassword
+            <div className="form-block__container">
+                <FormInput
+                    name="email"
+                    label="Correo electrónico"
+                    register={register}
+                    error={errors.email}
+                    disabled={isSubmitting}
+                />
+                <PasswordInput
                     name="password"
-                    register={register("password")}
+                    label="Contraseña"
+                    register={register}
                     error={errors.password}
-                    label={"Contraseña"}
-                    disabled={loading}
+                    disabled={isSubmitting}
                 />
             </div>
+
             <button
                 className="btn btn--primary"
                 type="submit"
-                disabled={Object.keys(errors).length > 0 || loading}
+                disabled={isSubmitting}
             >
-                {loading ? (
-                    <Ring2
-                        size="20"
-                        stroke="2"
-                        strokeLength="0.25"
-                        bgOpacity="0.1"
-                        speed="0.8"
-                        color="#ffffffff"
-                    />
+                {isSubmitting ? (
+                    <Ring2 size="20" stroke="2" color="#ffffffff" />
                 ) : (
                     "Ingresar"
                 )}

@@ -1,98 +1,127 @@
-import { useState } from "react";
-import { formatted } from "../utilities/formatDate";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import RenderIf from "./RenderIf";
+import { formatted } from "../utilities/formatDate";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
-const roleToLabel = {
+const ROLE_LABELS = {
     admin: "Administrador",
     technician: "Técnico",
     guest: "Invitado",
 };
 
-const statusToLabel = {
+const STATUS_LABELS = {
     active: "Activo",
     pending: "Pendiente",
     suspended: "Suspendido",
 };
 
-const getDisplayValue = (val) => val || "Sin asignar";
+const TABLE_HEADERS = [
+    "Nombre",
+    "Correo",
+    "Departamento",
+    "Rol",
+    "Estado",
+    "Registrado",
+    "Acción",
+];
 
-const DashboardUsersTable = ({ data = [] }) => {
-    const [users, setUsers] = useState(data);
+const displayValue = (val) => val || "Sin asignar";
 
-    /*const handleDeleteUser = async (userId) => {
+const UserActions = ({ onUpdate }) => (
+    <div className="data-table-block__cell--column">
+        <button
+            className="btn btn--primary"
+            onClick={() => onUpdate("approve")}
+        >
+            Aprobar
+        </button>
+        <button className="btn btn--danger" onClick={() => onUpdate("reject")}>
+            Rechazar
+        </button>
+    </div>
+);
+
+
+const UserRow = ({ user, onUpdateStatus }) => (
+    <tr
+        className={`data-table-block__row ${
+            user.status === "pending" ? "data-table-block__row--pending" : ""
+        }`}
+    >
+        <td className="data-table-block__cell">{displayValue(user.name)}</td>
+        <td className="data-table-block__cell">{displayValue(user.email)}</td>
+        <td className="data-table-block__cell">
+            {user.role === "technician"
+                ? "No aplica"
+                : displayValue(user.department)}
+        </td>
+        <td className="data-table-block__cell">{ROLE_LABELS[user.role]}</td>
+        <td className="data-table-block__cell">{STATUS_LABELS[user.status]}</td>
+        <td className="data-table-block__cell">{formatted(user.createdAt)}</td>
+        <td className="data-table-block__cell">
+            {user.status === "pending" ? (
+                <UserActions
+                    onUpdate={(action) => onUpdateStatus(user._id, action)}
+                />
+            ) : (
+                "No aplica"
+            )}
+        </td>
+    </tr>
+);
+
+
+const DashboardUsersTable = ({ data: initialUsers = [] }) => {
+    const [users, setUsers] = useState(initialUsers);
+
+    useEffect(() => {
+        setUsers(initialUsers);
+    }, [initialUsers]);
+
+    const handleUpdateUserStatus = async (userId, action) => {
+        const toastId = toast.loading("Actualizando usuario...");
         try {
-            const res = await fetch(`${API_BASE}/delete/${userId}`, {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-            });
-
-            const { message } = await res.json();
-
-            if (!res.ok) throw new Error(message);
-
-            toast.success(message);
-            setUsers((prev) => prev.filter((u) => u._id !== userId));
-        } catch (err) {
-            toast.error(err.message);
-        }
-    };*/
-
-    const handleApproveOrReject = async (userId, action) => {
-        try {
-            const res = await fetch(`${API_URL}/users/status/${userId}`, {
+            const response = await fetch(`${API_URL}/users/status/${userId}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
                 body: JSON.stringify({ action }),
             });
 
-            const { message, user: updatedUser } = await res.json();
+            const result = await response.json();
 
-            if (!res.ok) throw new Error(message);
+            if (!response.ok) {
+                throw new Error(result.message);
+            }
 
-            toast.success(
-                `Usuario ${
-                    action === "approve" ? "aprobado" : "rechazado"
-                } correctamente`
-            );
+            toast.success(result.message, { id: toastId });
 
             if (action === "approve") {
                 setUsers((prev) =>
                     prev.map((u) =>
-                        u._id === updatedUser._id ? updatedUser : u
+                        u._id === result.user._id ? result.user : u
                     )
                 );
             } else {
                 setUsers((prev) => prev.filter((u) => u._id !== userId));
             }
-        } catch (err) {
-            toast.error(err.message);
+        } catch (error) {
+            toast.error(error.message, { id: toastId });
         }
     };
 
-    if (!users.length) {
+    if (users.length === 0) {
         return <p>No hay usuarios para mostrar.</p>;
     }
 
     return (
         <div className="data-table-block">
             <h2 className="data-table-block__title">Usuarios Registrados</h2>
-
             <table className="data-table-block__table">
-                <thead className="data-table-block__header">
+                <thead>
                     <tr className="data-table-block__row data-table-block__row--header">
-                        {[
-                            "Nombre",
-                            "Correo",
-                            "Departamento",
-                            "Rol",
-                            "Estado",
-                            "Registrado",
-                            "Acción",
-                        ].map((title) => (
+                        {TABLE_HEADERS.map((title) => (
                             <th
                                 key={title}
                                 className="data-table-block__head-cell"
@@ -102,76 +131,13 @@ const DashboardUsersTable = ({ data = [] }) => {
                         ))}
                     </tr>
                 </thead>
-
-                <tbody className="data-table-block__body">
+                <tbody>
                     {users.map((user) => (
-                        <tr
+                        <UserRow
                             key={user._id}
-                            className={`data-table-block__row ${
-                                user.status === "pending"
-                                    ? "data-table-block__row--pending"
-                                    : ""
-                            }`}
-                        >
-                            <td className="data-table-block__cell">
-                                {getDisplayValue(user.name)}
-                            </td>
-                            <td className="data-table-block__cell">
-                                {getDisplayValue(user.email)}
-                            </td>
-                            <td className="data-table-block__cell">
-                                {user.role === "technician"
-                                    ? "No aplica"
-                                    : getDisplayValue(user.department)}
-                            </td>
-                            <td className="data-table-block__cell">
-                                {roleToLabel[user.role]}
-                            </td>
-                            <td className="data-table-block__cell">
-                                {statusToLabel[user.status]}
-                            </td>
-                            <td className="data-table-block__cell">
-                                {formatted(user.createdAt)}
-                            </td>
-                            <td className="data-table-block__cell data-table-block__cell--column">
-                                <RenderIf condition={user.status === "pending"}>
-                                    <button
-                                        className="btn btn--primary"
-                                        onClick={() =>
-                                            handleApproveOrReject(
-                                                user._id,
-                                                "approve"
-                                            )
-                                        }
-                                    >
-                                        Aprobar solictud
-                                    </button>
-
-                                    <button
-                                        className="btn btn--danger"
-                                        onClick={() =>
-                                            handleApproveOrReject(
-                                                user._id,
-                                                "reject"
-                                            )
-                                        }
-                                    >
-                                        Rechazar solictud
-                                    </button>
-                                </RenderIf>
-                                <RenderIf condition={user.status === "active"}>
-                                    {/* <button
-                                        className="btn btn--danger"
-                                        onClick={() =>
-                                            handleDeleteUser(user._id)
-                                        }
-                                    >
-                                        Eliminar usuario
-                                    </button>*/}
-                                    No aplica
-                                </RenderIf>
-                            </td>
-                        </tr>
+                            user={user}
+                            onUpdateStatus={handleUpdateUserStatus}
+                        />
                     ))}
                 </tbody>
             </table>

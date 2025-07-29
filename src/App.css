@@ -274,52 +274,19 @@ body {
     font-size: 1rem;
 }
 
-/*.form-block__button {
-    display: inline-block;
+.form-block__toggle-button {
     border: none;
-    outline: none;
-    text-decoration: none;
-    font-family: "Poppins";
-    font-size: 16px;
+    background: none;
     cursor: pointer;
-    text-align: center;
-    padding: 0.8rem 1.5rem;
-    border-radius: 6px;
-    color: #fff;
-    font-weight: 500;
-    transition: background-color 0.2s ease-in-out, transform 0.1s ease;
 }
 
-.form-block__button:hover {
-    transform: translateY(-2px);
+.form-block__toggle-button i {
+    font-size: 20px;
+    color: #19225c;
 }
 
-.form-block__button:active {
-    transform: translateY(0);
-}
-
-.form-block__button--submit {
-    background-color: #007bff;
-}
-
-.form-block__button--submit:hover {
-    background-color: #0056b3;
-}
-
-.form-block__button--submit:disabled {
-    background-color: #2888ee5d;
-    cursor: not-allowed;
-}*/
-
-.form-block__toggle-visibility {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-left: auto;
-}
-
-.form-block__toggle-checkbox {
-    cursor: pointer;
+.form-block__toggle-button i:hover {
+    color: #0CC0DF;
 }
 
 /*DAHSBOARD*/

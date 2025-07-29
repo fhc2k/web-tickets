@@ -1,94 +1,140 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-// import socket from "../socket";
+
 import TechnicianInput from "./TechnicianInput";
 import { formatted } from "../utilities/formatDate";
-import RenderIf from "./RenderIf";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
+const TABLE_HEADERS = [
+    "No. Ticket",
+    "Fecha y Hora",
+    "Departamento",
+    "Solicitante",
+    "Asunto",
+    "Descripción",
+    "Estado",
+    "Técnico Asignado",
+    "Descargar",
+    "Acciones",
+];
+
+const STATUS_LABELS = {
+    assigned: "Asignado",
+    open: "Abierto",
+    closed: "Cerrado",
+};
+
+const TicketRow = ({ ticket, activeTechnicians, onDelete }) => {
+    const displayValue = (value, placeholder = "Sin asignar") =>
+        value || placeholder;
+
+    return (
+        <tr key={ticket._id} className="data-table-block__row">
+            <td className="data-table-block__cell">
+                {ticket._id.slice(-6).toUpperCase()}
+            </td>
+
+            <td className="data-table-block__cell">
+                {formatted(ticket.createdAt)}
+            </td>
+
+            <td className="data-table-block__cell">
+                {displayValue(ticket.department)}
+            </td>
+
+            <td className="data-table-block__cell">
+                {ticket.createdBy?.name || "Eliminado"}
+            </td>
+
+            <td className="data-table-block__cell">
+                {displayValue(ticket.subject)}
+            </td>
+
+            <td className="data-table-block__cell">
+                {displayValue(ticket.description)}
+            </td>
+
+            <td className="data-table-block__cell">
+                <span className={`status-label status-label--${ticket.status}`}>
+                    {STATUS_LABELS[ticket.status] || ticket.status}
+                </span>
+            </td>
+
+            <td className="data-table-block__cell">
+                {ticket.assignedTo?.name ? (
+                    <span className="data-table-block__technician-name">
+                        {ticket.assignedTo.name}
+                    </span>
+                ) : activeTechnicians.length > 0 ? (
+                    <TechnicianInput
+                        ticket={ticket}
+                        technicians={activeTechnicians}
+                    />
+                ) : (
+                    "No hay técnicos activos."
+                )}
+            </td>
+            <td className="data-table-block__cell">
+                <Link
+                    to={`/print?id=${ticket._id}`}
+                    className="data-table-block__button data-table-block__button--download"
+                >
+                    PDF
+                </Link>
+            </td>
+            <td className="data-table-block__cell">
+                {ticket.status === "open" ? (
+                    <button
+                        onClick={() => onDelete(ticket._id)}
+                        className="btn btn--danger"
+                    >
+                        Eliminar
+                    </button>
+                ) : (
+                    "No aplica"
+                )}
+            </td>
+        </tr>
+    );
+};
+
 const DashboardAdminTicketsTable = ({ data }) => {
-    const { tickets, technicians } = data;
+    const { tickets = [], technicians = [] } = data;
     const [localTickets, setLocalTickets] = useState(tickets);
-    const [activeTechnicians, setActiveTechnicians] = useState([]);
 
     useEffect(() => {
-        setActiveTechnicians(technicians.filter((t) => t.status === "active"));
-    }, [technicians]);
+        setLocalTickets(tickets);
+    }, [tickets]);
 
-    const statusLabels = {
-        assigned: "Asignado",
-        open: "Abierto",
-        closed: "Cerrado",
-    };
-
-    const handleDisplayValue = (value) => {
-        if (value === undefined || value === "") return "Sin asignar";
-        return value;
-    };
+    const activeTechnicians = useMemo(
+        () => technicians.filter((t) => t.status === "active"),
+        [technicians]
+    );
 
     const handleDeleteTicket = async (ticketId) => {
+        const toastId = toast.loading("Eliminando ticket...");
         try {
-            const res = await fetch(
-                `${API_URL}/tickets/${ticketId}`,
-                {
-                    method: "DELETE",
-                    headers: { "Content-Type": "application/json" },
-                    credentials: "include",
-                }
-            );
+            const response = await fetch(`${API_URL}/tickets/${ticketId}`, {
+                method: "DELETE",
+                credentials: "include",
+            });
 
-            const { message } = await res.json();
+            const result = await response.json();
 
-            if (!res.ok) throw new Error(message);
+            if (!response.ok) {
+                throw new Error(result.message);
+            }
 
             setLocalTickets((prev) => prev.filter((t) => t._id !== ticketId));
-            toast.success(message);
+            toast.success(result.message, { id: toastId });
         } catch (error) {
-            toast.error(error.message);
+            toast.error(error.message, { id: toastId });
         }
     };
 
-    /*useEffect(() => {
-        const handleTicketUpdate = (updatedTicket) => {
-            setLocalTickets((prev) =>
-                prev.map((t) =>
-                    t._id === updatedTicket._id ? updatedTicket : t
-                )
-            );
-        };
-
-        const handleTicketCreate = (newTicket) => {
-            setLocalTickets((prev) => {
-                const exists = prev.some((t) => t._id === newTicket._id);
-                return exists ? prev : [...prev, newTicket];
-            });
-        };
-
-        const handleTicketDelete = (deletedTicket) => {
-            setLocalTickets((prev) =>
-                prev.filter((t) => t._id !== deletedTicket._id)
-            );
-        };
-
-        socket.on("connect", () => {
-            console.log("🟢 Socket conectado:", socket.id);
-        });
-
-        socket.on("ticket-updated", handleTicketUpdate);
-        socket.on("ticket-created", handleTicketCreate);
-        socket.on("ticket-deleted", handleTicketDelete);
-
-        return () => {
-            socket.off("ticket-updated", handleTicketUpdate);
-            socket.off("ticket-created", handleTicketCreate);
-            socket.off("ticket-deleted", handleTicketDelete);
-            socket.off("connect");
-            socket.disconnect();
-        };
-    }, []);*/
-
-    if (!localTickets.length) {
+    if (localTickets.length === 0) {
         return <p>No hay tickets para mostrar.</p>;
     }
 
@@ -98,20 +144,9 @@ const DashboardAdminTicketsTable = ({ data }) => {
             <table className="data-table-block__table">
                 <thead className="data-table-block__header">
                     <tr className="data-table-block__row data-table-block__row--header">
-                        {[
-                            "No. Ticket",
-                            "Fecha y Hora",
-                            "Departamento Solicitante",
-                            "Nombre del Solicitante",
-                            "Asunto",
-                            "Descripción",
-                            "Estado",
-                            "Técnico Asignado",
-                            "Descargar",
-                            "Acciones",
-                        ].map((head, idx) => (
+                        {TABLE_HEADERS.map((head) => (
                             <th
-                                key={idx}
+                                key={head}
                                 className="data-table-block__head-cell"
                             >
                                 {head}
@@ -119,93 +154,14 @@ const DashboardAdminTicketsTable = ({ data }) => {
                         ))}
                     </tr>
                 </thead>
-
                 <tbody className="data-table-block__body">
                     {localTickets.map((ticket) => (
-                        <tr key={ticket._id} className="data-table-block__row">
-                            <td className="data-table-block__cell">
-                                {handleDisplayValue(
-                                    ticket._id.slice(-6).toUpperCase()
-                                )}
-                            </td>
-                            <td className="data-table-block__cell">
-                                {handleDisplayValue(
-                                    formatted(ticket.createdAt)
-                                )}
-                            </td>
-                            <td className="data-table-block__cell">
-                                {handleDisplayValue(ticket.department)}
-                            </td>
-                            <td className="data-table-block__cell">
-                                {ticket.createdBy?.name || "Eliminado"}
-                            </td>
-                            <td className="data-table-block__cell">
-                                {handleDisplayValue(ticket.subject)}
-                            </td>
-                            <td className="data-table-block__cell">
-                                {handleDisplayValue(ticket.description)}
-                            </td>
-                            <td className="data-table-block__cell">
-                                <span
-                                    className={`status-label status-label--${ticket.status}`}
-                                >
-                                    {statusLabels[ticket.status] ||
-                                        ticket.status}
-                                </span>
-                            </td>
-                            <td className="data-table-block__cell">
-                                {ticket.assignedTo && ticket.assignedTo.name ? (
-                                    <span className="data-table-block__technician-name">
-                                        {ticket.assignedTo.name}
-                                    </span>
-                                ) : activeTechnicians.length ? (
-                                    <TechnicianInput
-                                        data={{
-                                            ticket,
-                                            technicians: activeTechnicians,
-                                        }}
-                                    />
-                                ) : (
-                                    "No hay técnicos activos para asignar."
-                                )}
-                            </td>
-
-                            <td className="data-table-block__cell">
-                                <Link
-                                    to={`/print?id=${
-                                        ticket._id
-                                    }&area=${encodeURIComponent(
-                                        ticket.department
-                                    )}&name=${encodeURIComponent(
-                                        ticket.name
-                                    )}&subject=${encodeURIComponent(
-                                        ticket.subject
-                                    )}&description=${encodeURIComponent(
-                                        ticket.description
-                                    )}&technician=${
-                                        ticket.technician || ""
-                                    }&createdAt=${ticket.createdAt}`}
-                                    className="data-table-block__button data-table-block__button--download"
-                                >
-                                    PDF
-                                </Link>
-                            </td>
-                            <td className="data-table-block__cell">
-                                <RenderIf condition={ticket.status === "open"}>
-                                    <button
-                                        onClick={() =>
-                                            handleDeleteTicket(ticket._id)
-                                        }
-                                        className="btn btn--danger"
-                                    >
-                                        Eliminar
-                                    </button>
-                                </RenderIf>
-                                <RenderIf condition={ticket.status !== "open"}>
-                                    No aplica
-                                </RenderIf>
-                            </td>
-                        </tr>
+                        <TicketRow
+                            key={ticket._id}
+                            ticket={ticket}
+                            activeTechnicians={activeTechnicians}
+                            onDelete={handleDeleteTicket}
+                        />
                     ))}
                 </tbody>
             </table>
