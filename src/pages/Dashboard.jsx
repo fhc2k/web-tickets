@@ -48,11 +48,10 @@ export const useUserDashboardData = (user) => {
                         fetch(`${API_URL}/${endpoint}`, {
                             method: "GET",
                             credentials: "include",
-                        }).then((res) => {
+                        }).then(async (res) => {
                             if (!res.ok) {
-                                throw new Error(
-                                    `Error al obtener: ${endpoint}`
-                                );
+                                const errorData = await res.json();
+                                throw new Error(errorData.message);
                             }
                             return res.json();
                         })
