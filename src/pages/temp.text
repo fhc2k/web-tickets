@@ -1,0 +1,108 @@
+/*const technicians = [
+        "Daniel Rivera",
+        "Samuel Pérez",
+        "Ramon García",
+        "Angel Muciño",
+        "Daniel Briseño",
+    ];
+
+    const { data, error, isLoading } = useSWR("/reports", fetcher);
+
+    const itemsWithTechnician = data?.filter((item) => item.technician)?.length;
+    const itemsWithoutTechnician = data?.filter(
+        (item) => !item.technician
+    )?.length;
+
+    return (
+        <div className="content-area">
+            <h1 className="content-area__title">Panel de Administración</h1>
+            <div className="content-area__body">
+                <div className="dashboard-block">
+                    <div className="dashboard-block__info-section">
+                        <div className="dashboard-block__info-item">
+                            {isLoading ? (
+                                <Ring2
+                                    size="20"
+                                    stroke="2"
+                                    strokeLength="0.25"
+                                    bgOpacity="0.1"
+                                    speed="0.8"
+                                    color="#13204e"
+                                />
+                            ) : itemsWithTechnician === null ||
+                              itemsWithTechnician === undefined ? (
+                                <p className="dashboard-block__info-title">
+                                    Sin datos
+                                </p>
+                            ) : (
+                                itemsWithTechnician
+                            )}
+
+                            <p className="dashboard-block__info-subtitle">
+                                Asignados
+                            </p>
+                        </div>
+                        <div className="dashboard-block__info-item">
+                            {isLoading ? (
+                                <Ring2
+                                    size="20"
+                                    stroke="2"
+                                    strokeLength="0.25"
+                                    bgOpacity="0.1"
+                                    speed="0.8"
+                                    color="#813a89"
+                                />
+                            ) : itemsWithoutTechnician === null ||
+                              itemsWithoutTechnician === undefined ? (
+                                <p className="dashboard-block__info-title">
+                                    Sin datos
+                                </p>
+                            ) : (
+                                itemsWithoutTechnician
+                            )}
+                            <p className="dashboard-block__info-subtitle">
+                                No asignados
+                            </p>
+                        </div>
+                        <div className="dashboard-block__info-item">
+                            {isLoading ? (
+                                <Ring2
+                                    size="20"
+                                    stroke="2"
+                                    strokeLength="0.25"
+                                    bgOpacity="0.1"
+                                    speed="0.8"
+                                    color="#8b5b5b"
+                                />
+                            ) : data === null || data === undefined ? (
+                                <p className="dashboard-block__info-title">
+                                    Sin datos
+                                </p>
+                            ) : (
+                                data.length
+                            )}
+                            <p className="dashboard-block__info-subtitle">
+                                Reportes totales
+                            </p>
+                        </div>
+                    </div>
+                    {isLoading ? (
+                        <Ring2
+                            size="40"
+                            stroke="5"
+                            strokeLength="0.25"
+                            bgOpacity="0.1"
+                            speed="0.8"
+                            color="black"
+                        />
+                    ) : error ? (
+                        <p>Error</p>
+                    ) : data.length ? (
+                        <DashboardTable data={{ data, technicians }} />
+                    ) : (
+                        <p>No hay registros para mostrar.</p>
+                    )}
+                </div>
+            </div>
+        </div>
+    );*/
