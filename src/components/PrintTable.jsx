@@ -18,7 +18,7 @@ const PrintTable = ({ ticket }) => {
     ];
 
     return (
-        <div className="ticket-table-block" id="printable-area">
+        <div className="ticket-table-block"  id="printable-area">
             <h2 className="ticket-table-block__title">Reporte de Servicio</h2>
             <table className="ticket-table-block__table">
                 <thead>

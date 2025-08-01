@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { formatted } from "../utilities/formatDate";
+import UserFilters from "./UsersFilter";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -72,7 +73,7 @@ const UserRow = ({ user, onUpdateStatus }) => (
 );
 
 
-const DashboardUsersTable = ({ data: initialUsers = [] }) => {
+const DashboardAdminUsersTable = ({ data: initialUsers = [] }) => {
     const [users, setUsers] = useState(initialUsers);
 
     useEffect(() => {
@@ -118,6 +119,7 @@ const DashboardUsersTable = ({ data: initialUsers = [] }) => {
     return (
         <div className="data-table-block">
             <h2 className="data-table-block__title">Usuarios Registrados</h2>
+           <UserFilters />
             <table className="data-table-block__table">
                 <thead>
                     <tr className="data-table-block__row data-table-block__row--header">
@@ -145,4 +147,4 @@ const DashboardUsersTable = ({ data: initialUsers = [] }) => {
     );
 };
 
-export default DashboardUsersTable;
+export default DashboardAdminUsersTable;

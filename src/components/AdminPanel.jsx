@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 const API_URL = import.meta.env.VITE_API_URL;
-import DashboardUsersTable from "./DashboardUsersTable";
+import DashboardAdminUsersTable from "./DashboardAdminUsersTable";
 import DashboardAdminTicketsTable from "./DashboardAdminTicketsTable";
 import { useAuth } from "../context/AuthContext";
 import { Grid } from "ldrs/react";
@@ -103,7 +103,7 @@ const AdminPanel = () => {
 
     return (
         <>
-            <DashboardUsersTable data={data.users} />
+            <DashboardAdminUsersTable data={data.users} />
 
             <DashboardAdminTicketsTable
                 data={{

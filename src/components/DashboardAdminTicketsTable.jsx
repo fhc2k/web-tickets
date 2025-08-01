@@ -141,6 +141,7 @@ const DashboardAdminTicketsTable = ({ data }) => {
     return (
         <div className="data-table-block">
             <h2 className="data-table-block__title">Tickets de Soporte</h2>
+            
             <table className="data-table-block__table">
                 <thead className="data-table-block__header">
                     <tr className="data-table-block__row data-table-block__row--header">
