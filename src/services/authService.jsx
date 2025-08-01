@@ -22,7 +22,7 @@ export const registerUser = async (formData) => {
         const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(data.message || "Ocurrió un error desconocido.");
+            throw new Error(data.message);
         }
 
         toast.success(data.message, { id: toastId });

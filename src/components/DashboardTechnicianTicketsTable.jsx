@@ -78,7 +78,7 @@ const DashboardTechnicianTicketsTable = ({ data }) => {
         const toastId = toast.loading("Cerrando ticket...");
         try {
             const response = await fetch(
-                `${API_URL}/tickets/assigned/${ticketId}/close`,
+                `${API_URL}/tickets/my-assigned/${ticketId}/close`,
                 {
                     method: "PATCH",
                     credentials: "include",

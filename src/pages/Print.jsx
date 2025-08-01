@@ -2,6 +2,8 @@ import { useReactToPrint } from "react-to-print";
 import { useRef, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import PrintTable from "../components/PrintTable";
+import { Grid } from "ldrs/react";
+import "ldrs/react/Grid.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -25,13 +27,17 @@ const Report = () => {
         const fetchTicketData = async () => {
             try {
                 const response = await fetch(`${API_URL}/tickets/${ticketId}`, {
+                    method: "GET",
                     credentials: "include",
                 });
-                if (!response.ok) throw new Error("Ticket no encontrado.");
+
                 const data = await response.json();
+
+                if (!response.ok) throw new Error(data.message);
+
                 setTicket(data);
-            } catch (err) {
-                setError(err.message);
+            } catch (error) {
+                setError(error.message);
             } finally {
                 setIsLoading(false);
             }
@@ -41,18 +47,20 @@ const Report = () => {
     }, [searchParams]);
 
     const handlePrint = useReactToPrint({
-        content: () => contentRef.current,
+        contentRef: contentRef,
         documentTitle: `Reporte-${ticket?._id || "ticket"}`,
     });
 
-    if (isLoading)
+    if (isLoading) {
         return (
-            <p className="error-message">
-                Obteniedo informacion del ticket{error}
-            </p>
+            <>
+                <Grid size="60" speed="1.5" color="#007bff" />
+                <p>Obteniendo datos del ticket...</p>
+            </>
         );
+    }
 
-    if (error) return <p className="error-message">Error: {error}</p>;
+    if (error) return <p className="error-message">{error}</p>;
 
     return (
         <div className="content-area">

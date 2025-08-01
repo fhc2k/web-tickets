@@ -20,7 +20,10 @@ body {
     }
 }
 
-
+.error-message {
+    text-align: center;
+    color: #dc3545;
+}
 
 .btn {
     width: -webkit-fill-available;

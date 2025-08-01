@@ -6,7 +6,30 @@ import { useAuth } from "../context/AuthContext";
 import { Grid } from "ldrs/react";
 import "ldrs/react/Grid.css";
 
-export const useAdminDashboardData = (user) => {
+const fetchUsers = async (filters = {}) => {
+    const baseURL = `${API_URL}/users`;
+    const params = new URLSearchParams(filters);
+    const url = `${baseURL}?${params.toString()}`;
+
+    try {
+        const response = await fetch(url, {
+            method: "GET",
+            credentials: "include",
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message);
+        }
+
+        return data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const useAdminDashboardData = (user) => {
     const initialState = {
         guests: [],
         technicians: [],
@@ -15,7 +38,7 @@ export const useAdminDashboardData = (user) => {
     };
 
     const [data, setData] = useState(initialState);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [isError, setIsError] = useState(null);
 
     useEffect(() => {
@@ -23,51 +46,38 @@ export const useAdminDashboardData = (user) => {
             setIsLoading(true);
             setIsError(null);
 
-            const adminEndpoints = [
-                "users/all-guest",
-                "users/all-technicians",
-                "tickets/all-tickets",
-            ];
-
             try {
-                const responses = await Promise.all(
-                    adminEndpoints.map((endpoint) =>
-                        fetch(`${API_URL}/${endpoint}`, {
-                            method: "GET",
-                            credentials: "include",
-                        }).then(async (res) => {
-                            if (!res.ok) {
-                                const errorData = await res.json();
-                                throw new Error(
-                                    errorData.message ||
-                                        "Error al obtener los datos"
-                                );
-                            }
-                            return res.json();
-                        })
-                    )
-                );
+                const [guestsData, techniciansData, ticketsData] =
+                    await Promise.all([
+                        fetchUsers({ role: "guest" }),
+                        fetchUsers({ role: "technician" }),
 
-                const [guests = [], technicians = [], tickets = []] = responses;
+                        fetch(`${API_URL}/tickets`, {
+                            credentials: "include",
+                        }).then((res) => {
+                            if (!res.ok)
+                                throw new Error("Error al obtener los tickets");
+                            return res.json();
+                        }),
+                    ]);
+
+                const allUsers = [...guestsData, ...techniciansData];
 
                 setData({
-                    guests,
-                    technicians,
-                    tickets,
-                    users: [...guests, ...technicians],
+                    guests: guestsData,
+                    technicians: techniciansData,
+                    tickets: ticketsData,
+                    users: allUsers,
                 });
             } catch (error) {
-                setIsError(error);
-
+                setIsError(error.message);
                 setData(initialState);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        if (user && user.role === "admin") {
-            fetchData();
-        }
+        fetchData();
     }, [user]);
 
     return { data, isLoading, isError };
@@ -88,7 +98,7 @@ const AdminPanel = () => {
     }
 
     if (isError) {
-        return <div className="error-message">{isError.message}</div>;
+        return <div className="error-message">{isError}</div>;
     }
 
     return (
